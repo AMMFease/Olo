@@ -1,0 +1,43 @@
+Test Plan for the Olo Challenge
+
+Tests should be able to be run individually, sequentially or in parallel.
+
+Tests should start with a clean server and run a setup routine before execution, then run a teardown routine after execution.  
+A flag should be used for setup/teardown in the case that multiple tests are run in the same test suite, to eliminate excess
+initialization and hopefully find bugs when data is manipulated over time.  A debug mode should be implemented such that if
+one or more tests fail, teardown is not run so the SUT (system under test) can be examined for test or code defects.
+
+The following are Use Cases for the Olo Challenge:
+
+Positive:
+  Get (fetch posts):
+    Get all posts via       --> https://jsonplaceholder.typicode.com/posts
+    Get one post by id via  --> https://jsonplaceholder.typicode.com/comments?postId={postId}
+  Post (create posts):
+    Post a post via         --> https://jsonplaceholder.typicode.com/posts
+    Post a post comment via --> https://jsonplaceholder.typicode.com/posts/{postId}/comments
+  Put (modify posts):
+    Put a post via          --> https://jsonplaceholder.typicode.com/posts/{postId}
+  Delete (delete posts):
+    Delete a post via       --> https://jsonplaceholder.typicode.com/posts/{postId}
+    
+Negative:
+  Attempt to get a post with an invalid id
+  Attempt to post a post with invalid data
+  Attempt to put a post with invalid data
+  Attempt to delete a post with an invalid id
+  
+Stress:
+  Create a test suite from the above tests that gets, posts, puts and deletes posts in a random and concurrent 
+    manner, such that not only is the SUT performing multiple simultaneous operations, but perhaps timing will
+    allow negative conditions to occur such as getting, putting or deleting a post that has already been
+    deleted.
+    
+NOTE: The URL used "fakes" posts, puts and deletes such that it returns the correct response code, but does not
+      actually modify the database.  This is good for vetting the test suite, but cannot be used as acceptance
+      data for the code.  These tests must run and pass on live, modifiable systems.
+
+NOTE: The initial runs of these tests were done with an online python interpreter that does not accept code in
+      multiple, modular files.  Thus if this initial test suite is put into production so that it can be
+      expanded on, the test suite must be broken up into individual modular files.  This solution is only to be
+      used as a proof of concept.
