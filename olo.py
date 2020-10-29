@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # encoding: utf-8
 
-thisVersion = "v002"
+thisVersion = "v003"
 
 
 #######################################################################################
@@ -11,6 +11,8 @@ thisVersion = "v002"
 ## notes for current restrictions and future enhancements.
 ##
 ## v001 - Initial version with starter utilities and first test use case (get posts).
+## v002 - Added code for remaining test use cases (positive tests only).
+## v003 - Added TBDs for logging, performance suite, etc.
 #######################################################################################
 
 
@@ -18,6 +20,7 @@ thisVersion = "v002"
 ## Imports
 #######################################################################################
 import requests
+import logging
 
 
 #######################################################################################
@@ -25,6 +28,10 @@ import requests
 #######################################################################################
 BaseUrl = "https://jsonplaceholder.typicode.com/"  # URL for JSONPlaceholder.
 
+## TBD for stress and multiple test execution, set RunSetup to false on first test 
+## invocation so that the system will build up data as the test progresses, rather 
+## than cleaning up after each test case.  Last test case in the test suite should
+## set RunTeardown to True so SUT gets cleaned up at the end of the test suite.
 RunSetup = True     # Should the test case/suite run setup?
 RunTeardown = True  # Should the test case/suite run teardown?
 
@@ -42,10 +49,17 @@ class APICall:      # Types of API calls exercised by this test suite.
 ## Set up the SUT.
 def setup():
     print("\nInitializing system...")
+    ### TBD set up system with initial test data.
     
 ## Clean up the SUT.
 def teardown():
     print("\nCleaning up system...")
+    ### TBD delete all test data on the SUT.
+    
+##### TBD #####
+## Logging utility - log messages in the format "<timestamp> - <method name>: message"
+## so we don't have to print so much to the console.  
+## def log(msg):
     
 ## Make the API call and print the results.    
 def callAPI(callType, callParams, data = {}):   
@@ -71,7 +85,8 @@ def callAPI(callType, callParams, data = {}):
         # Print the results.
         # Success API return calls are 200 (OK) and 201 (Created).   
         print("Return code = %d" % response.status_code)     # Print http response code.
-        print("Returned JSON response:\n%s" % response.text) # Print formatted JSON response. 
+        if (response.status_code != 500):  # No response text for server error 500
+            print("Returned JSON response:\n%s" % response.text) # Print formatted JSON response. 
     
         # Return test results - success or failure.
         if ((response.status_code == 200) or (response.status_code == 201)):
@@ -80,6 +95,7 @@ def callAPI(callType, callParams, data = {}):
             return False
     else:
         return False
+
 
 #######################################################################################
 ## Tests
@@ -116,6 +132,8 @@ def testPutById(id):
     success = callAPI(APICall.PUT, idString, data)
     if (success):
         print("\n*** Test testPutById() completed successfully. ***")
+    elif ((not success) and (id == 7000)):
+        print("\n*** Negative test testPutById() completed sucessfully. ***")
     else:
         print("\n*** Test testPutById() failed. ***")
     teardown()
@@ -127,6 +145,8 @@ def testDeleteById(id):
     success = callAPI(APICall.DELETE, idString)
     if (success):
         print("\n*** Test testDeleteById() completed successfully. ***")
+    elif ((not success) and (id == 7000)):
+        print("\n*** Negative test testDeleteById() completed sucessfully. ***")
     else:
         print("\n*** Test testDeleteById() failed. ***")
     teardown()
@@ -145,6 +165,8 @@ def testPostById(id):
     success = callAPI(APICall.POST, idString, data)
     if (success):
         print("\n*** Test testPostById() completed successfully. ***")
+    elif ((not success) and (id == 7000)):
+        print("\n*** Negative test testPostById() completed sucessfully. ***")
     else:
         print("\n*** Test testPostById() failed. ***")
     teardown()
@@ -156,21 +178,51 @@ def testGetById(id):
     success = callAPI(APICall.GET, idString)
     if (success):
         print("\n*** Test testGetById() completed successfully. ***")
+    elif ((not success) and (id == 7000)):
+        print("\n*** Negative test testGetById() completed sucessfully. ***")
     else:
         print("\n*** Test testGetById() failed. ***")
     teardown()
 
+
 #######################################################################################
 ## Test Suites
 #######################################################################################
-print("\nBegin tests ....")
-id = 1
-testGet()
-testPost()
-testPutById(id)
-testDeleteById(id)
-testPostById(id)
-testGetById(id)
-print("\nTest execution complete.")
+## Positive test suite.
+def doPositiveTests():
+    print("\nSet id to 1 and run positive tests ...")
+    id = 1
+    testGet()
+    testPost()
+    testPutById(id)
+    testDeleteById(id)
+    testPostById(id)
+    testGetById(id)
 
+## Negative test suite.
+def doNegativeTests():
+    # A hack as id in this case is <=100.  Generally this should be set to the maximum
+    # id + a random value to ensure the id does not exist.
+    print("Set id to 7000 and run negative tests ...")
+    id = 7000
+    testPutById(id)
+    testDeleteById(id)
+    testPostById(id)
+    testGetById(id)
+
+## Stress test suite.
+##### TBD #####
+## Create multiple threads, each performing a single operation, and run threads 
+## randomly for a specific amount of time, in parallel.
+## def doStressTest():
+
+
+#######################################################################################
+## Main
+#######################################################################################
+print("\nBegin tests ....")
+doPositiveTests()
+doNegativeTests()
+#doStressTest()
+print("\nTest execution complete.")
 
